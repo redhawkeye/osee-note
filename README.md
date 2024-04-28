@@ -1,2 +1,2 @@
-# osee-note
-OSEE Note
+# OSEE Note
+This is OSEE note repository

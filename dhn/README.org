@@ -1,0 +1,102 @@
+#+TITLE:     Resources
+
+Collection of resources for my preparation to take the OSEE certification.
+Based on the [[https://www.offensive-security.com/documentation/advanced-windows-exploitation.pdf][syllabus]] from Offensive Security.
+My review can be found [[https://zer0-day.pw/2020-01/offsec-says-try-harder-or-how-to-become-an-osee/][here]].
+
+** Browser Exploitation
+*** Safari/Chrome/Webkit
+    + [[https://phoenhex.re/2018-09-26/safari-array-concat][Exploiting a Safari information leak]] by Bruno Keith
+    + [[https://saelo.github.io/presentations/blackhat_us_18_attacking_client_side_jit_compilers.pdf][Attacking Client-Side JIT Compilers]] by Samuel Groß
+    + [[http://phrack.org/papers/jit_exploitation.html][Exploiting Logic Bugs in JavaScript JIT Engines]] by Samuel Groß
+** Bypass and	Sandbox	Escape
+*** Data Execution Prevention (DEP)
+**** Tutorials
+    + [[https://www.corelan.be/index.php/2010/06/16/exploit-writing-tutorial-part-10-chaining-dep-with-rop-the-rubikstm-cube/][Exploit writing tutorial part 10 : Chaining DEP with ROP]] by Corelan
+    + [[https://0x00sec.org/t/bypass-data-execution-protection-dep/6988][Bypass Data Execution Protection (DEP)]] by Sk0xic
+    + [[https://0x00sec.org/t/exploit-mitigation-techniques-data-execution-prevention-dep/4634][Exploit Mitigation Techniques - Data Execution Prevention (DEP)]] by ricksanchez
+*** Supervisor Mode Execution Prevention (SMEP)
+    + [[https://www.coresecurity.com/system/files/publications/2019/03/Windows%20SMEP%20bypass%20U%3DS.pdf][Windows SMEP bypass: U=S]] by Nicolas Economou & Enrique Nissim
+    + [[https://www.abatchy.com/2018/01/kernel-exploitation-4][Kernel Exploitation 4: Stack Buffer Overflow (SMEP Bypass)]] by Mohamed Shahat
+    + [[https://salls.github.io/Linux-Kernel-CVE-2017-5123/][Exploiting CVE-2017-5123 with full protections. SMEP, SMAP, and the Chrome Sandbox!]] by Chris Salls
+    + [[https://rce.wtf/2017/09/24/P4wning-the-windows-kernel-with-ROP.html][ROP: Pwn the Windows Kernel with return oriented programming]] by akayn
+*** Enhanced Mitigation Experience Toolkit (EMET)
+**** Papers/Slides/Blogs 
+    + [[https://www.offensive-security.com/vulndev/disarming-emet-v5-0/][Disarming EMET v5.0]] by Offensive Security
+    + [[https://www.offensive-security.com/vulndev/disarming-and-bypassing-emet-5-1/][Disarming and Bypassing EMET 5.1]] by Offensive Security
+    + [[https://www.offensive-security.com/vulndev/disarming-enhanced-mitigation-experience-toolkit-emet/][Disarming Enhanced Mitigation Experience Toolkit (EMET)]] by Offensive Security
+    + [[https://www.xorlab.com/blog/2016/10/27/emet-memprot-bypass/][Bypassing EMET 5.5 MemProt using VirtualAlloc]] by Matthias Ganz
+    + [[https://www.offensive-security.com/vulndev/fldbg-a-pykd-script-to-debug-flashplayer/][Fldbg, a Pykd script to debug FlashPlayer]] by Offensive Security
+** Heap Exploitation
+*** Tutorials
+    + [[https://blog.rapid7.com/2019/06/12/heap-overflow-exploitation-on-windows-10-explained/][Heap Overflow Exploitation on Windows 10 Explained]] by Wei Chen
+    + [[https://www.fuzzysecurity.com/tutorials/expDev/8.html][Part 8: Spraying the Heap (Vanilla EIP)]] by FuzzySecurity
+    + [[https://www.fuzzysecurity.com/tutorials/expDev/11.html][Part 9: Spraying the Heap (Use-After-Free)]] by FuzzySecurity
+    + [[https://www.corelan.be/index.php/2013/02/19/deps-precise-heap-spray-on-firefox-and-ie10/][DEPS – Precise Heap Spray on Firefox and IE10]] by Corelan
+    + [[https://0x00sec.org/t/heap-exploitation-abusing-use-after-free/3580][Heap Exploitation ~ Abusing Use-After-Free]] by _py
+*** Heap Overflows
+    + [[http://www.fuzzysecurity.com/tutorials/mr_me/2.html][Heap Overflows For Humans 101]] by FuzzySecurity
+    + [[http://www.fuzzysecurity.com/tutorials/mr_me/3.html][Heap Overflows For Humans 102]] by FuzzySecurity
+    + [[http://www.fuzzysecurity.com/tutorials/mr_me/4.html][Heap Overflows For Humans 102.5]] by FuzzySecurity
+    + [[http://www.fuzzysecurity.com/tutorials/mr_me/5.html][Heap Overflows For Humans 103]] by FuzzySecurity
+    + [[http://www.fuzzysecurity.com/tutorials/mr_me/6.html][Heap Overflows For Humans 103.5]] by FuzzySecurity
+** Kernel Exploitation
+*** Documentation/Papers/Slides
+    + [[https://docs.microsoft.com/en-us/windows/desktop/SysInfo/kernel-objects][Kernel Objects]] by Microsoft
+    + [[https://media.blackhat.com/bh-dc-11/Mandt/BlackHat_DC_2011_Mandt_kernelpool-wp.pdf][Kernel Pool Exploitation on Windows 7]] by Tarjei Mandt
+** Kernel Drivers	Exploitation (32-bit)
+*** Tutorials
+    + [[https://github.com/hacksysteam/HackSysExtremeVulnerableDriver][HackSys Extreme Vulnerable Windows Driver]] by Ashfaq Ansari
+    + [[https://www.abatchy.com/2018/01/kernel-exploitation-1][Kernel Exploitation 1: Setting up the environment]] by Mohamed Shahat
+    + [[http://niiconsulting.com/checkmate/2016/01/windows-kernel-exploitation/][Windows Kernel Exploitation]] by Neelu Tripathy
+    + [[https://sizzop.github.io/2016/07/05/kernel-hacking-with-hevd-part-1.html][Kernel Hacking With HEVD Part 1 - The Setup]] by Brian Beaudry
+    + [[https://www.fuzzysecurity.com/tutorials/expDev/14.html][Kernel Exploitation -> Stack Overflow]] by FuzzySecurity
+    + [[https://www.fuzzysecurity.com/tutorials/expDev/15.html][Kernel Exploitation -> Write-What-Where]] by FuzzySecurity
+    + [[https://www.fuzzysecurity.com/tutorials/expDev/16.html][Kernel Exploitation -> Null Pointer Dereferenc]] by FuzzySecurity
+    + [[https://www.fuzzysecurity.com/tutorials/expDev/17.html][Kernel Exploitation -> Uninitialized Stack Variable]] by FuzzySecurity
+    + [[https://www.fuzzysecurity.com/tutorials/expDev/18.html][Kernel Exploitation -> Integer Overflow]] by FuzzySecurity
+    + [[https://www.fuzzysecurity.com/tutorials/expDev/19.html][Kernel Exploitation -> UAF]] by FuzzySecurity
+    + [[https://www.fuzzysecurity.com/tutorials/expDev/20.html][Kernel Exploitation -> Pool Overflow]] by FuzzySecurity
+    + [[https://www.fuzzysecurity.com/tutorials/expDev/21.html][Kernel Exploitation -> GDI Bitmap Abuse (Win7-10 32/64bit)]] by FuzzySecurity
+    + [[https://www.fuzzysecurity.com/tutorials/expDev/22.html][Kernel Exploitation -> RS2 Bitmap Necromancy]] by FuzzySecurity
+    + [[https://www.fuzzysecurity.com/tutorials/expDev/23.html][Kernel Exploitation -> Logic bugs in Razer rzpnk.sys]] by FuzzySecurity
+    + [[https://www.whitehatters.academy/intro-to-windows-kernel-exploitation-2-windows-drivers/][Intro to Windows kernel exploitation]] by Sam Brown
+    + [[https://srcincite.io/blog/2017/09/06/sharks-in-the-pool-mixed-object-exploitation-in-the-windows-kernel-pool.html][Mixed Object Exploitation in the Windows Kernel Pool]] by Steven Seeley
+*** Papers/Slides
+    + [[https://www.coresecurity.com/system/files/publications/2019/03/Windows%20SMEP%20bypass%20U%3DS.pdf][Windows SMEP bypass: U=S]] by Nicolas Economou & Enrique Nissim
+    + [[http://web.archive.org/web/20170525074304/http://trackwatch.com/windows-kernel-pool-spraying/][Windows Kernel Pool Spraying]] by Philippe
+    + [[https://insomniasec.com/downloads/publications/The%20Path%20To%20Ring-0.pdf][The Path to Ring-0 (Windows Edition)]] by Debasis Mohanty
+** Kernel Drivers Exploitation (64-bit)
+*** Articles
+    + [[https://www.nccgroup.trust/globalassets/our-research/uk/whitepapers/2015/09/2015-08-28_-_ncc_group_-_exploiting_cve_2015_2426_-_release.pdf][Exploiting CVE-2015-2426, and How I Ported it to a Recent Windows 8.1 64-bit]] by Cedric Halbronn
+    + [[https://www.blackhat.com/docs/us-17/wednesday/us-17-Schenk-Taking-Windows-10-Kernel-Exploitation-To-The-Next-Level%E2%80%93Leveraging-Write-What-Where-Vulnerabilities-In-Creators-Update-wp.pdf][Taking Windows 10 Kernel-Exploitation To The Next Level Leveraging Write What Where Vulnerabilities In Creators Update]] by Morten Schenk
+    + [[http://mcdermottcybersecurity.com/articles/x64-kernel-privilege-escalation][x64 Kernel Privilege Escalation]] by mcdermott
+*** Tutorials
+    + [[https://blahcat.github.io/2017/08/31/arbitrary-write-primitive-in-windows-kernel-hevd/][Arbitrary Write primitive in Windows kernel (HEVD)]] by blahcat
+*** Exploits 
+    + [[https://github.com/Cn33liz/HSEVD-StackOverflowX64][HackSys Extreme Vulnerable Driver - Windows 10 x64 StackOverflow Exploit with SMEP Bypass]] by Cn33liz
+    + [[https://www.exploit-db.com/exploits/41721/][CVE-2015-5736 - Fortinet FortiClient 5.2.3]] by Alexandru Uifalvi
+** Kernel ASLR Bypass
+*** Articles
+	+ [[https://www.offensive-security.com/vulndev/development-of-a-new-windows-10-kaslr-bypass-in-one-windbg-command/][Development of a new Windows 10 KASLR Bypass (in One WinDBG Command)]] by Morten Schenk
+** Shellcoding
+*** Windows 10
+    + [[https://improsec.com/tech-blog/windows-kernel-shellcode-on-windows-10-part-1][Windows Kernel Shellcode on Windows 10 - Part 1]] by Morten Schenk
+    + [[https://improsec.com/tech-blog/windows-kernel-shellcode-on-windows-10-part-2][Windows Kernel Shellcode on Windows 10 - Part 2]] by Morten Schenk
+    + [[https://github.com/MortenSchenk/Token-Stealing-Shellcode][Token Stealing Shellcode]] by Morten Schenk
+** Misc
+*** WinDbg
+    + [[http://windbg.info/doc/1-common-cmds.html][Common WinDbg Commands]] by Robert Kuster
+    + [[https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/][Debugging Tools for Windows]] by Microsoft
+    + [[https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/getting-started-with-windows-debugging][Getting Started with Windows Debugging]] by Microsoft
+    + [[https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/debug-universal-drivers---step-by-step-lab--echo-kernel-mode-][Debug Universal Drivers - Step by Step Lab]] by Microsoft
+    + [[https://briolidz.wordpress.com/2013/11/17/windbg-some-debugging-commands/][WinDbg: Some debugging commands]] by Kamel Messaoudi
+    + [[https://web.archive.org/web/20170803175807/http://expdev-kiuhnm.rhcloud.com:80/2015/05/17/windbg/][WinDbg]] by Exploit Development Community
+*** Tutorials
+    + [[https://rayanfam.com/topics/pykd-tutorial-part1/][PyKD Tutorial – part 1]] by Sinaei
+** Books
+   + [[https://beginners.re/][Reverse Engineering for Beginners]] by Dennis Yurichev
+   + [[https://www.amazon.com/Advanced-Windows-Debugging-Mario-Hewardt/dp/0321374460/?_encoding=UTF8&camp=1789&creative=9325&linkCode=ur2&tag=theethhacne0c-20][Advanced Windows Debugging]] by Mario Hewardt
+   + [[https://www.amazon.com/Windows-Internals-Part-Covering-Server%C2%AE/dp/0735648735/?_encoding=UTF8&camp=1789&creative=9325&linkCode=ur2&tag=theethhacne0c-20][Windows Internals, Part 1]] by Mark E. Russinovich
+   + [[http://www.amazon.com/Windows-Internals-Part-Covering-Server%C2%AE/dp/0735665877/?_encoding=UTF8&camp=1789&creative=9325&linkCode=ur2&tag=theethhacne0c-20][Windows Internals, Part 2]] by Mark E. Russinovich
+   + [[https://www.amazon.com/The-IDA-Pro-Book-Disassembler/dp/1593272898/?_encoding=UTF8&camp=1789&creative=9325&linkCode=ur2&tag=theethhacne0c-20][The IDA Pro Book: The Unofficial Guide to the World's Most Popular Disassembler]] by Chris Eagle

